@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard – Encuentro Hombres Ministerio Pastor Ramos</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #0d47a1; --azul-medio: #1565c0; --azul-claro: #1976d2;
+    --azul-suave: #1e88e5; --azul-bg: #0a2d6e;
+    --naranja: #f57c00; --naranja-v: #ff6d00; --amarillo: #fdd835;
+    --blanco: #ffffff; --verde: #2e7d32;
+    --calor1: #bbdefb; --calor2: #64b5f6; --calor3: #1976d2; --calor4: #0d47a1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: #061a47; color: #fff; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { width: 220px; flex-shrink: 0; background: #04122e; padding: 24px 0; display: flex; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo { padding: 0 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+  .sidebar-logo span { font-family: 'Barlow Condensed',sans-serif; font-size: 13px; font-weight: 700; color: var(--naranja-v); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 3px; }
+  .sidebar-logo small { font-size: 10px; color: rgba(255,255,255,0.4); line-height: 1.4; display: block; }
+  .nav-item { padding: 10px 20px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.55); cursor: pointer; display: flex; align-items: center; gap: 10px; border-left: 3px solid transparent; transition: all .2s; }
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .nav-item.active { color: #fff; background: rgba(29,99,255,0.18); border-left-color: var(--naranja-v); }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .header { background: var(--naranja-v); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .header-title { font-family: 'Barlow Condensed',sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+  .header-sub { font-size: 11px; opacity: .85; margin-top: 2px; }
+  .filter-select { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 7px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Barlow',sans-serif; outline: none; }
+  .filter-select option { background: #1a237e; }
+  .btn { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 7px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Barlow',sans-serif; }
+  .btn:hover { background: rgba(0,0,0,0.35); }
+
+  .content { flex: 1; background: var(--azul-medio); padding: 20px 24px; overflow-y: auto; }
+
+  /* KPIs */
+  .kpi-row { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 18px; }
+  .kpi-card { background: var(--azul); border-radius: 6px; padding: 12px 14px; animation: fadeUp .4s both; }
+  .kpi-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #90caf9; margin-bottom: 5px; }
+  .kpi-meta { font-size: 24px; font-family: 'Barlow Condensed',sans-serif; font-weight: 700; line-height: 1; }
+  .kpi-actual { font-size: 13px; font-weight: 600; margin-top: 3px; color: var(--naranja-v); }
+  .kpi-pct { font-family: 'Barlow Condensed',sans-serif; font-size: 20px; font-weight: 800; margin-top: 5px; }
+  .kpi-pct.high { color: var(--naranja-v); } .kpi-pct.mid { color: var(--amarillo); } .kpi-pct.low { color: #ef9a9a; }
+  .kpi-desc { font-size: 9px; color: #90caf9; margin-top: 2px; }
+  .progress-bar-wrap { background: rgba(255,255,255,0.1); border-radius: 20px; height: 5px; margin-top: 5px; }
+  .progress-bar { height: 5px; border-radius: 20px; background: var(--naranja-v); transition: width 1s ease; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 2px; margin-bottom: 0; }
+  .tab { padding: 8px 18px; font-size: 11px; font-weight: 600; background: var(--azul); color: #90caf9; cursor: pointer; border-radius: 6px 6px 0 0; transition: .2s; text-transform: uppercase; letter-spacing: .5px; }
+  .tab.active { background: var(--azul-suave); color: white; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SECTION */
+  .section-header { background: var(--azul-suave); border-radius: 6px 6px 0 0; padding: 10px 16px; font-family: 'Barlow Condensed',sans-serif; font-size: 14px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
+  .section-header span { font-size: 11px; font-weight: 500; opacity: .7; font-family: 'Barlow',sans-serif; text-transform: none; }
+  .table-wrap { border-radius: 0 0 6px 6px; overflow: hidden; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--azul); }
+  thead th { padding: 9px 10px; font-size: 10px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: .5px; color: #bbdefb; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.08); }
+  thead th.left { text-align: left; }
+  thead th.group-pre  { background: #0a3d8f; }
+  thead th.group-pago { background: #bf360c; }
+  thead th.group-enc  { background: #1b5e20; }
+  thead th.group-post { background: #e65100; }
+  thead th.group-fin  { background: #4a148c; }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.06); transition: background .15s; animation: fadeUp .35s both; }
+  tbody tr:hover { background: rgba(255,255,255,0.07) !important; }
+  tbody tr:nth-child(odd)  { background: rgba(255,255,255,0.03); }
+  tbody tr:nth-child(even) { background: rgba(0,0,0,0.15); }
+  td { padding: 8px 10px; font-size: 12px; text-align: center; border-right: 1px solid rgba(255,255,255,0.06); }
+  td.name { text-align: left; font-weight: 600; font-size: 12px; white-space: nowrap; }
+  .heat-cell { display: inline-block; min-width: 32px; padding: 2px 7px; border-radius: 3px; font-weight: 700; font-size: 12px; font-family: 'Barlow Condensed',sans-serif; }
+  .h-a1 { background:#bbdefb; color:#0d47a1; } .h-a2 { background:#64b5f6; color:#0d47a1; }
+  .h-a3 { background:#1976d2; color:#fff; }   .h-a4 { background:#0d47a1; color:#fff; }
+  .h-n1 { background:#ffe0b2; color:#bf360c; } .h-n2 { background:#ffb74d; color:#bf360c; }
+  .h-n3 { background:#f57c00; color:#fff; }    .h-n4 { background:#e65100; color:#fff; }
+  .h-p1 { background:#e1bee7; color:#4a148c; } .h-p2 { background:#ba68c8; color:#fff; }
+  .h-p3 { background:#8e24aa; color:#fff; }    .h-p4 { background:#4a148c; color:#fff; }
+  .total-bg { background: var(--naranja-v) !important; }
+  .total-bg td { color: #fff; font-weight: 700; border-right-color: rgba(255,255,255,0.2); }
+
+  /* EMBUDO */
+  .embudo-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; }
+  .embudo-step { background: var(--azul); border-radius: 6px; padding: 14px 10px; text-align: center; position: relative; animation: fadeUp .5s both; }
+  .embudo-step::after { content: '▶'; position: absolute; right: -11px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 11px; z-index: 1; }
+  .embudo-step:last-child::after { display: none; }
+  .e-label { font-size: 9px; text-transform: uppercase; letter-spacing: .6px; color: #90caf9; margin-bottom: 6px; font-weight: 700; }
+  .e-num { font-family: 'Barlow Condensed',sans-serif; font-size: 30px; font-weight: 800; line-height: 1; }
+  .e-pct { font-size: 10px; margin-top: 4px; color: var(--amarillo); font-weight: 600; }
+  .embudo-step.naranja { background: linear-gradient(135deg,#e65100,#f57c00); }
+  .embudo-step.verde   { background: linear-gradient(135deg,#1b5e20,#2e7d32); }
+  .embudo-step.purp    { background: linear-gradient(135deg,#4a148c,#7b1fa2); }
+
+  /* SEARCH */
+  .search-bar { width: 100%; padding: 8px 12px; margin-bottom: 10px; background: var(--azul); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; color: white; font-size: 12px; font-family: 'Barlow',sans-serif; outline: none; }
+  .search-bar::placeholder { color: rgba(255,255,255,0.4); }
+
+  /* INFO BOX */
+  .info-box { background: rgba(255,109,0,0.15); border: 1px solid rgba(255,109,0,0.4); border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: #ffcc80; }
+  .info-box strong { color: var(--naranja-v); }
+
+  .footer { padding: 8px 24px; background: #04122e; font-size: 10px; color: rgba(255,255,255,0.3); display: flex; justify-content: space-between; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @media (max-width:1100px) { .kpi-row { grid-template-columns: repeat(3,1fr); } .embudo-grid { grid-template-columns: repeat(4,1fr); } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>✝ Ministerio</span>
+      <small>Encuentro Hombres<br>Pastor Ramos – Bogotá</small>
+    </div>
+    <div class="nav-item active" onclick="showTab('general')"><span>📊</span> General</div>
+    <div class="nav-item" onclick="showTab('equipos')"><span>👥</span> Equipos de 12</div>
+    <div class="nav-item" onclick="showTab('clases')"><span>📚</span> Clases</div>
+    <div class="nav-item" onclick="showTab('pagos')"><span>💰</span> Pagos y Encuentro</div>
+    <div class="nav-item" onclick="showTab('final')"><span>🎓</span> Bautismo y Grado</div>
+    <div class="nav-item" onclick="showTab('base')"><span>📋</span> Base de Datos</div>
+  </nav>
+
+  <div class="main">
+    <div class="header">
+      <div>
+        <div class="header-title">Encuentro Hombres – Ministerio Pastor Ramos</div>
+        <div class="header-sub">Bogotá &nbsp;|&nbsp; Encuentro 15–17 de Mayo &nbsp;|&nbsp; 12 Líderes · 144 Hombres</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select class="filter-select" id="filtroLider" onchange="filtrarLider()">
+          <option value="todos">Todos los líderes</option>
+        </select>
+        <button class="btn" onclick="exportarCSV()">⬇ Exportar CSV</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="info-box">
+        <strong>⚠️ Dashboard listo para seguimiento.</strong> Los datos de asistencia, pagos y clases están en <strong>0</strong> porque aún no se ha registrado seguimiento. Actualiza el archivo con los datos reales del Google Forms para ver el avance.
+      </div>
+
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <div class="tabs">
+        <div class="tab active" id="tab-general"  onclick="showTab('general')">📊 General</div>
+        <div class="tab" id="tab-equipos" onclick="showTab('equipos')">👥 Equipos de 12</div>
+        <div class="tab" id="tab-clases"  onclick="showTab('clases')">📚 Clases</div>
+        <div class="tab" id="tab-pagos"   onclick="showTab('pagos')">💰 Pagos</div>
+        <div class="tab" id="tab-final"   onclick="showTab('final')">🎓 Bautismo</div>
+        <div class="tab" id="tab-base"    onclick="showTab('base')">📋 Base</div>
+      </div>
+
+      <div class="tab-content active" id="content-general">
+        <div class="section-header">Embudo del Proceso <span>De registro hasta grado</span></div>
+        <div class="table-wrap" style="padding:18px;background:var(--azul);">
+          <div class="embudo-grid" id="embudoGrid"></div>
+        </div>
+        <br>
+        <div class="section-header">Avance General por Líder <span>Resumen de todas las etapas</span></div>
+        <div class="table-wrap"><table id="tablaGeneral"></table></div>
+      </div>
+
+      <div class="tab-content" id="content-equipos">
+        <div class="section-header">Equipos de 12 – Detalle por Etapa <span>12 líderes × 12 hombres</span></div>
+        <div class="table-wrap"><table id="tablaEquipos"></table></div>
+      </div>
+
+      <div class="tab-content" id="content-clases">
+        <div class="section-header">Asistencia a Clases <span>Pre y Post Encuentro</span></div>
+        <div class="table-wrap"><table id="tablaClases"></table></div>
+      </div>
+
+      <div class="tab-content" id="content-pagos">
+        <div class="section-header">Pagos y Asistencia al Encuentro 15–17 Mayo</div>
+        <div class="table-wrap"><table id="tablaPagos"></table></div>
+      </div>
+
+      <div class="tab-content" id="content-final">
+        <div class="section-header">Post-Encuentro, Bautismo y Grado <span>Etapa final</span></div>
+        <div class="table-wrap"><table id="tablaFinal"></table></div>
+      </div>
+
+      <div class="tab-content" id="content-base">
+        <div class="section-header">Base de Datos – 144 Hombres <span id="baseCount"></span></div>
+        <input class="search-bar" type="text" placeholder="🔍  Buscar por nombre o líder..." oninput="filtrarBase(this.value)">
+        <div class="table-wrap"><table id="tablaBase"></table></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>Última actualización: <span id="fechaUpdate"></span></span>
+      <span>Ministerio Encuentro Hombres · Pastor Ramos · Bogotá</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const PERSONAS = [{"id": 1, "lider": "Leonardo Cabrera", "nombre": "Orlando Vargas", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 2, "lider": "Leonardo Cabrera", "nombre": "Fernando Téllez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 3, "lider": "Leonardo Cabrera", "nombre": "Boris Alavarado", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 4, "lider": "Leonardo Cabrera", "nombre": "Helbert Useche", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 5, "lider": "Leonardo Cabrera", "nombre": "Alberth León", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 6, "lider": "Leonardo Cabrera", "nombre": "Brandon Arias", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 7, "lider": "Leonardo Cabrera", "nombre": "Frank Labrador", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 8, "lider": "Leonardo Cabrera", "nombre": "Alberto Balaguera", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 9, "lider": "Leonardo Cabrera", "nombre": "Marcel Suarez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 10, "lider": "Leonardo Cabrera", "nombre": "Oscar Garcia", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 11, "lider": "Leonardo Cabrera", "nombre": "Oscar Sierra", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 12, "lider": "Leonardo Cabrera", "nombre": "Vacante 12", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 13, "lider": "Juan Carlos Bohorquez", "nombre": "Jaime Suarez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 14, "lider": "Juan Carlos Bohorquez", "nombre": "Alvaro Pinilla", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 15, "lider": "Juan Carlos Bohorquez", "nombre": "Rigoberto Porras", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 16, "lider": "Juan Carlos Bohorquez", "nombre": "Manuel Forero", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 17, "lider": "Juan Carlos Bohorquez", "nombre": "Nilson Paladinez Gomez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 18, "lider": "Juan Carlos Bohorquez", "nombre": "Juan Ospina", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 19, "lider": "Juan Carlos Bohorquez", "nombre": "Norberto Rodriguez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 20, "lider": "Juan Carlos Bohorquez", "nombre": "Victor Ernesto Valles", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 21, "lider": "Juan Carlos Bohorquez", "nombre": "Jhon Ramirez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 22, "lider": "Juan Carlos Bohorquez", "nombre": "Haivey Fabricio Barrera Sánchez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 23, "lider": "Juan Carlos Bohorquez", "nombre": "Jimmy Moreno", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 24, "lider": "Juan Carlos Bohorquez", "nombre": "Heiver Marin", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 25, "lider": "Miguel Pavez", "nombre": "Alex David Urango", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 26, "lider": "Miguel Pavez", "nombre": "Juan Miguel Pavez Castiblanco", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 27, "lider": "Miguel Pavez", "nombre": "Daniel Amezquita", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 28, "lider": "Miguel Pavez", "nombre": "Steven Báez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 29, "lider": "Miguel Pavez", "nombre": "Fernando Ospina", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 30, "lider": "Miguel Pavez", "nombre": "Juan Carlos Coronado", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 31, "lider": "Miguel Pavez", "nombre": "Juan David Bajonera", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 32, "lider": "Miguel Pavez", "nombre": "Jose Gerardo Sánchez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 33, "lider": "Miguel Pavez", "nombre": "Jonathan Ramirez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 34, "lider": "Miguel Pavez", "nombre": "Julian Bonilla", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 35, "lider": "Miguel Pavez", "nombre": "Edwin Bajoreno", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 36, "lider": "Miguel Pavez", "nombre": "Wilmar Soto", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 37, "lider": "Javier Cruz", "nombre": "Antonio Montenegro", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 38, "lider": "Javier Cruz", "nombre": "Cristian Arevalo", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 39, "lider": "Javier Cruz", "nombre": "Jhon Quiñonez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 40, "lider": "Javier Cruz", "nombre": "Ronald Rengifo", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 41, "lider": "Javier Cruz", "nombre": "Andres Rincon", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 42, "lider": "Javier Cruz", "nombre": "Edilberto Castro", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 43, "lider": "Javier Cruz", "nombre": "Gerson Rodríguez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 44, "lider": "Javier Cruz", "nombre": "Jhonatan Duran", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 45, "lider": "Javier Cruz", "nombre": "John Duque", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 46, "lider": "Javier Cruz", "nombre": "Juan David Navarrete", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 47, "lider": "Javier Cruz", "nombre": "Mauricio Niño", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 48, "lider": "Javier Cruz", "nombre": "Marlon Polanco", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 49, "lider": "Mauricio Rivera", "nombre": "Alejandro Alvarado", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 50, "lider": "Mauricio Rivera", "nombre": "Edwin Alejandro Orozco", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 51, "lider": "Mauricio Rivera", "nombre": "Luis Carlos Contreras", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 52, "lider": "Mauricio Rivera", "nombre": "Dilson Eliecer Zabala", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 53, "lider": "Mauricio Rivera", "nombre": "Erick Walter Salamanca", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 54, "lider": "Mauricio Rivera", "nombre": "Jairo Alberto Agudelo", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 55, "lider": "Mauricio Rivera", "nombre": "Johan Alejandro Blanco", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 56, "lider": "Mauricio Rivera", "nombre": "Jose Leonardo Guacaneme", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 57, "lider": "Mauricio Rivera", "nombre": "Giovanny Orozco", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 58, "lider": "Mauricio Rivera", "nombre": "Jhon Bojacá", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 59, "lider": "Mauricio Rivera", "nombre": "Deiro De Felipe", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 60, "lider": "Mauricio Rivera", "nombre": "Vacante 60", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 61, "lider": "William Paez", "nombre": "Jhon Morales", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 62, "lider": "William Paez", "nombre": "Nelson Lopez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 63, "lider": "William Paez", "nombre": "Robinson Rojas", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 64, "lider": "William Paez", "nombre": "Antonio Barón", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 65, "lider": "William Paez", "nombre": "Vacante 65", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 66, "lider": "William Paez", "nombre": "Jorge Sánchez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 67, "lider": "William Paez", "nombre": "Johan Aldana", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 68, "lider": "William Paez", "nombre": "Javier Martínez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 69, "lider": "William Paez", "nombre": "Nelson Saavedra", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 70, "lider": "William Paez", "nombre": "Mario Jiménez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 71, "lider": "William Paez", "nombre": "Juan Barragan", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 72, "lider": "William Paez", "nombre": "Vacante 72", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 73, "lider": "Juan Carlos Sanabria", "nombre": "Nelson Ruiz", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 74, "lider": "Juan Carlos Sanabria", "nombre": "Alexander La Rotta", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 75, "lider": "Juan Carlos Sanabria", "nombre": "Jaime Yolis C", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 76, "lider": "Juan Carlos Sanabria", "nombre": "Gerardo Gracia", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 77, "lider": "Juan Carlos Sanabria", "nombre": "Walter Amado", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 78, "lider": "Juan Carlos Sanabria", "nombre": "Wilmar Cardenas", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 79, "lider": "Juan Carlos Sanabria", "nombre": "Camilo Aguirre", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 80, "lider": "Juan Carlos Sanabria", "nombre": "Jorge Espinoza", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 81, "lider": "Juan Carlos Sanabria", "nombre": "Vacante 81", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 82, "lider": "Juan Carlos Sanabria", "nombre": "Vacante 82", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 83, "lider": "Juan Carlos Sanabria", "nombre": "Vacante 83", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 84, "lider": "Juan Carlos Sanabria", "nombre": "Vacante 84", "reg": false, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 85, "lider": "Alfredo Torres", "nombre": "Hernán Jitala", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 86, "lider": "Alfredo Torres", "nombre": "Einer Marcelino Valbuena", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 87, "lider": "Alfredo Torres", "nombre": "Luis Puerta", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 88, "lider": "Alfredo Torres", "nombre": "Kevin Moreno", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 89, "lider": "Alfredo Torres", "nombre": "Luis Gaona", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 90, "lider": "Alfredo Torres", "nombre": "Alfonso Rubio", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 91, "lider": "Alfredo Torres", "nombre": "Jhonatan Alexander Morales", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 92, "lider": "Alfredo Torres", "nombre": "Hernando Gomez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 93, "lider": "Alfredo Torres", "nombre": "Gorgonio Presiga", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 94, "lider": "Alfredo Torres", "nombre": "Jhonatan Cano", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 95, "lider": "Alfredo Torres", "nombre": "Wilson Torres", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 96, "lider": "Alfredo Torres", "nombre": "Jhon Bustos", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 97, "lider": "Roberson Florez", "nombre": "Uri Alexander Maldonado", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 98, "lider": "Roberson Florez", "nombre": "Felipe Gómez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 99, "lider": "Roberson Florez", "nombre": "Meyer Vasquez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 100, "lider": "Roberson Florez", "nombre": "Diego Avellaneda", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 101, "lider": "Roberson Florez", "nombre": "Diego Rojas", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 102, "lider": "Roberson Florez", "nombre": "Alejandro Granados", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 103, "lider": "Roberson Florez", "nombre": "Fernando Aponte", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 104, "lider": "Roberson Florez", "nombre": "Jaime Agusto Salcedo", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 105, "lider": "Roberson Florez", "nombre": "Mauricio Buitrago", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 106, "lider": "Roberson Florez", "nombre": "Julio Silva", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 107, "lider": "Roberson Florez", "nombre": "Carlos Andres Corredor Gil", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 108, "lider": "Roberson Florez", "nombre": "Carlos Cepeda", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 109, "lider": "Aldemar Higuera", "nombre": "Cesar Baquero", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 110, "lider": "Aldemar Higuera", "nombre": "Milton Torres", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 111, "lider": "Aldemar Higuera", "nombre": "Andres Gutierrez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 112, "lider": "Aldemar Higuera", "nombre": "Sergio Paredes", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 113, "lider": "Aldemar Higuera", "nombre": "Freddy Rojas", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 114, "lider": "Aldemar Higuera", "nombre": "Leonardo Aponte", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 115, "lider": "Aldemar Higuera", "nombre": "Willian Reyes", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 116, "lider": "Aldemar Higuera", "nombre": "Camilo Ramirez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 117, "lider": "Aldemar Higuera", "nombre": "Marlon Vera", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 118, "lider": "Aldemar Higuera", "nombre": "Edgardo Arias", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 119, "lider": "Aldemar Higuera", "nombre": "Pedro Sanchez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 120, "lider": "Aldemar Higuera", "nombre": "Jesús Molina", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 121, "lider": "Joseph Diaz", "nombre": "Javier Ramos", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 122, "lider": "Joseph Diaz", "nombre": "Diego Moreno", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 123, "lider": "Joseph Diaz", "nombre": "Edgar Triana", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 124, "lider": "Joseph Diaz", "nombre": "David Sebastian Cardona", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 125, "lider": "Joseph Diaz", "nombre": "Cristian Contreras", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 126, "lider": "Joseph Diaz", "nombre": "Nicolas Segura", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 127, "lider": "Joseph Diaz", "nombre": "Jonathan Gonzalez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 128, "lider": "Joseph Diaz", "nombre": "Duvan Rodriguez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 129, "lider": "Joseph Diaz", "nombre": "Victor León", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 130, "lider": "Joseph Diaz", "nombre": "Jonathan Quintero", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 131, "lider": "Joseph Diaz", "nombre": "Antony Alomia", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 132, "lider": "Joseph Diaz", "nombre": "Johad Ferney Lopez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 133, "lider": "Edgar Pintor", "nombre": "Yersinio Trujillo", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 134, "lider": "Edgar Pintor", "nombre": "Alex Gomez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 135, "lider": "Edgar Pintor", "nombre": "Edwin Pintor", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 136, "lider": "Edgar Pintor", "nombre": "Alverio Alegria", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 137, "lider": "Edgar Pintor", "nombre": "Julian Chamorro", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 138, "lider": "Edgar Pintor", "nombre": "Luis Carlos Duque", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 139, "lider": "Edgar Pintor", "nombre": "Oscar Santos", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 140, "lider": "Edgar Pintor", "nombre": "Dario Munevar", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 141, "lider": "Edgar Pintor", "nombre": "Benjamin Guerrero", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 142, "lider": "Edgar Pintor", "nombre": "Cristian D Ariza", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 143, "lider": "Edgar Pintor", "nombre": "Edwar Mendez", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}, {"id": 144, "lider": "Edgar Pintor", "nombre": "Eduardo Fajardo", "reg": true, "c1": false, "c2": false, "c3": false, "c4": false, "pag": false, "enc": false, "pc1": false, "pc2": false, "pc3": false, "pc4": false, "baut": false, "grad": false}];
+const LIDERES  = ["Leonardo Cabrera", "Juan Carlos Bohorquez", "Miguel Pavez", "Javier Cruz", "Mauricio Rivera", "William Paez", "Juan Carlos Sanabria", "Alfredo Torres", "Roberson Florez", "Aldemar Higuera", "Joseph Diaz", "Edgar Pintor"];
+
+const cnt  = f => PERSONAS.filter(p=>p[f]).length;
+const cntL = (l,f) => PERSONAS.filter(p=>p.lider===l && p[f]).length;
+const pct  = (a,b) => b ? (a/b*100).toFixed(1) : '0.0';
+
+const TOT=144, REG=cnt('reg'), C1=cnt('c1'), C2=cnt('c2'), C3=cnt('c3'), C4=cnt('c4');
+const PAG=cnt('pag'), ENC=cnt('enc');
+const PC1=cnt('pc1'), PC2=cnt('pc2'), PC3=cnt('pc3'), PC4=cnt('pc4');
+const BAUT=cnt('baut'), GRAD=cnt('grad');
+
+function heatA(v,m){ if(!m)return 'h-a1'; const r=v/m; return r>=.85?'h-a4':r>=.6?'h-a3':r>=.35?'h-a2':'h-a1'; }
+function heatN(v,m){ if(!m)return 'h-n1'; const r=v/m; return r>=.85?'h-n4':r>=.6?'h-n3':r>=.35?'h-n2':'h-n1'; }
+function heatP(v,m){ if(!m)return 'h-p1'; const r=v/m; return r>=.85?'h-p4':r>=.6?'h-p3':r>=.35?'h-p2':'h-p1'; }
+function hCell(v,cls){ return `<span class="heat-cell ${cls}">${v}</span>`; }
+function pctColor(v){ const n=parseFloat(v); return n>=80?'high':n>=50?'mid':'low'; }
+
+// KPIs
+function renderKPIs(data){
+  const kpis=[
+    {label:'Total Potencial', meta:TOT,      actual:data.reg??REG,  desc:'Hombres registrados'},
+    {label:'Pre-Clases (4)',  meta:data.reg??REG,  actual:data.c4??C4,   desc:'Completaron 4 clases'},
+    {label:'Pagos',           meta:data.reg??REG,  actual:data.pag??PAG, desc:'Pagaron el encuentro'},
+    {label:'Al Encuentro',   meta:data.pag??PAG,  actual:data.enc??ENC, desc:'15-17 Mayo'},
+    {label:'Bautismos',      meta:data.enc??ENC,  actual:data.baut??BAUT,desc:'Post-proceso'},
+    {label:'Graduados',      meta:data.baut??BAUT,actual:data.grad??GRAD,desc:'Proceso completo'},
+  ];
+  document.getElementById('kpiRow').innerHTML=kpis.map((k,i)=>{
+    const p=pct(k.actual,k.meta), cls=pctColor(p);
+    return `<div class="kpi-card" style="animation-delay:${i*.06}s">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-meta">${k.meta}</div>
+      <div class="kpi-actual">${k.actual} inscritos</div>
+      <div class="kpi-pct ${cls}">${p}%</div>
+      <div class="kpi-desc">${k.desc}</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${Math.min(parseFloat(p),100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+renderKPIs({});
+
+// EMBUDO
+const embudoData=[
+  {label:'Registrados',  val:REG, ref:TOT, cls:''},
+  {label:'Pre-Cl. 4/4',  val:C4,  ref:REG, cls:''},
+  {label:'Pagaron',      val:PAG, ref:REG, cls:'naranja'},
+  {label:'Encuentro',    val:ENC, ref:PAG, cls:'verde'},
+  {label:'Post-Cl. 4/4', val:PC4, ref:ENC, cls:'naranja'},
+  {label:'Bautismo',     val:BAUT,ref:PC4, cls:''},
+  {label:'Grado',        val:GRAD,ref:BAUT,cls:'purp'},
+];
+document.getElementById('embudoGrid').innerHTML=embudoData.map((e,i)=>`
+  <div class="embudo-step ${e.cls}" style="animation-delay:${i*.08}s">
+    <div class="e-label">${e.label}</div>
+    <div class="e-num">${e.val}</div>
+    <div class="e-pct">${pct(e.val,e.ref)}% anterior</div>
+  </div>`).join('');
+
+// TABLA GENERAL
+function buildTablaGeneral(filtro){
+  const rows=filtro==='todos'?LIDERES:LIDERES.filter(l=>l===filtro);
+  const mxReg=Math.max(...LIDERES.map(l=>cntL(l,'reg')));
+  const mxC4=Math.max(...LIDERES.map(l=>cntL(l,'c4')));
+  const mxPag=Math.max(...LIDERES.map(l=>cntL(l,'pag')));
+  const mxEnc=Math.max(...LIDERES.map(l=>cntL(l,'enc')));
+  let html=`<thead><tr>
+    <th class="left">Líder de 12</th>
+    <th>Registrados</th><th>Pre (4 cl.)</th><th>Pagaron</th>
+    <th>Encuentro</th><th>Bautismo</th><th>Grado</th><th>% Avance</th>
+  </tr></thead><tbody>`;
+  rows.forEach((l,i)=>{
+    const r=cntL(l,'reg'),c4=cntL(l,'c4'),pg=cntL(l,'pag'),en=cntL(l,'enc'),bt=cntL(l,'baut'),gd=cntL(l,'grad');
+    const av=pct(gd,12);
+    html+=`<tr style="animation-delay:${i*.04}s">
+      <td class="name">👤 ${l}</td>
+      <td>${hCell(r,heatA(r,mxReg))}</td><td>${hCell(c4,heatA(c4,mxC4))}</td>
+      <td>${hCell(pg,heatN(pg,mxPag))}</td><td>${hCell(en,heatA(en,mxEnc))}</td>
+      <td>${hCell(bt,'h-p1')}</td><td>${hCell(gd,'h-p1')}</td>
+      <td><b style="color:${parseFloat(av)>=50?'#69f0ae':parseFloat(av)>=25?'#ffd740':'#90caf9'}">${av}%</b></td>
+    </tr>`;
+  });
+  html+=`<tr class="total-bg"><td class="name">TOTAL</td>
+    <td>${REG}</td><td>${C4}</td><td>${PAG}</td><td>${ENC}</td>
+    <td>${BAUT}</td><td>${GRAD}</td><td>${pct(GRAD,144)}%</td>
+  </tr></tbody>`;
+  document.getElementById('tablaGeneral').innerHTML=html;
+}
+buildTablaGeneral('todos');
+
+// TABLA EQUIPOS
+function buildTablaEquipos(filtro){
+  const rows=filtro==='todos'?LIDERES:LIDERES.filter(l=>l===filtro);
+  const mx={};
+  ['reg','c1','c2','c3','c4','pag','enc','pc1','pc2','pc3','pc4','baut','grad']
+    .forEach(f=>mx[f]=Math.max(...LIDERES.map(l=>cntL(l,f))));
+  let html=`<thead>
+    <tr><th class="left" rowspan="2">Líder</th>
+      <th class="group-pre" colspan="4">PRE-ENCUENTRO</th>
+      <th class="group-pago">PAGO</th><th class="group-enc">ENCUENTRO</th>
+      <th class="group-post" colspan="4">POST-ENCUENTRO</th>
+      <th class="group-fin">BAUTISMO</th><th class="group-fin">GRADO</th>
+    </tr><tr>
+      <th class="group-pre">Cl.1</th><th class="group-pre">Cl.2</th>
+      <th class="group-pre">Cl.3</th><th class="group-pre">Cl.4</th>
+      <th class="group-pago">Pagaron</th><th class="group-enc">15-17 Mayo</th>
+      <th class="group-post">Cl.1</th><th class="group-post">Cl.2</th>
+      <th class="group-post">Cl.3</th><th class="group-post">Cl.4</th>
+      <th class="group-fin">Bautismo</th><th class="group-fin">Grado</th>
+    </tr></thead><tbody>`;
+  rows.forEach((l,i)=>{
+    const d={};
+    ['c1','c2','c3','c4','pag','enc','pc1','pc2','pc3','pc4','baut','grad'].forEach(f=>d[f]=cntL(l,f));
+    html+=`<tr style="animation-delay:${i*.04}s">
+      <td class="name">👤 ${l}</td>
+      <td>${hCell(d.c1,heatA(d.c1,mx.c1))}</td><td>${hCell(d.c2,heatA(d.c2,mx.c2))}</td>
+      <td>${hCell(d.c3,heatA(d.c3,mx.c3))}</td><td>${hCell(d.c4,heatA(d.c4,mx.c4))}</td>
+      <td>${hCell(d.pag,heatN(d.pag,mx.pag))}</td><td>${hCell(d.enc,heatA(d.enc,mx.enc))}</td>
+      <td>${hCell(d.pc1,heatN(d.pc1,mx.pc1))}</td><td>${hCell(d.pc2,heatN(d.pc2,mx.pc2))}</td>
+      <td>${hCell(d.pc3,heatN(d.pc3,mx.pc3))}</td><td>${hCell(d.pc4,heatN(d.pc4,mx.pc4))}</td>
+      <td>${hCell(d.baut,heatP(d.baut,mx.baut))}</td><td>${hCell(d.grad,heatP(d.grad,mx.grad))}</td>
+    </tr>`;
+  });
+  html+=`<tr class="total-bg"><td class="name">TOTAL</td>
+    <td>${C1}</td><td>${C2}</td><td>${C3}</td><td>${C4}</td>
+    <td>${PAG}</td><td>${ENC}</td>
+    <td>${PC1}</td><td>${PC2}</td><td>${PC3}</td><td>${PC4}</td>
+    <td>${BAUT}</td><td>${GRAD}</td>
+  </tr></tbody>`;
+  document.getElementById('tablaEquipos').innerHTML=html;
+}
+buildTablaEquipos('todos');
+
+// TABLA CLASES
+function buildTablaClases(filtro){
+  const rows=filtro==='todos'?LIDERES:LIDERES.filter(l=>l===filtro);
+  const mx={};
+  ['c1','c2','c3','c4','pc1','pc2','pc3','pc4'].forEach(f=>mx[f]=Math.max(...LIDERES.map(l=>cntL(l,f))));
+  let html=`<thead><tr>
+    <th class="left" rowspan="2">Líder</th>
+    <th class="group-pre" colspan="4">PRE-ENCUENTRO (4 Clases)</th>
+    <th class="group-post" colspan="4">POST-ENCUENTRO (4 Clases)</th>
+  </tr><tr>
+    <th class="group-pre">Cl. 1</th><th class="group-pre">Cl. 2</th>
+    <th class="group-pre">Cl. 3</th><th class="group-pre">Cl. 4</th>
+    <th class="group-post">Cl. 1</th><th class="group-post">Cl. 2</th>
+    <th class="group-post">Cl. 3</th><th class="group-post">Cl. 4</th>
+  </tr></thead><tbody>`;
+  rows.forEach((l,i)=>{
+    html+=`<tr style="animation-delay:${i*.04}s"><td class="name">👤 ${l}</td>
+      ${['c1','c2','c3','c4'].map(f=>`<td>${hCell(cntL(l,f),heatA(cntL(l,f),mx[f]))}</td>`).join('')}
+      ${['pc1','pc2','pc3','pc4'].map(f=>`<td>${hCell(cntL(l,f),heatN(cntL(l,f),mx[f]))}</td>`).join('')}
+    </tr>`;
+  });
+  html+=`<tr class="total-bg"><td class="name">TOTAL</td>
+    <td>${C1}</td><td>${C2}</td><td>${C3}</td><td>${C4}</td>
+    <td>${PC1}</td><td>${PC2}</td><td>${PC3}</td><td>${PC4}</td>
+  </tr></tbody>`;
+  document.getElementById('tablaClases').innerHTML=html;
+}
+buildTablaClases('todos');
+
+// TABLA PAGOS
+function buildTablaPagos(filtro){
+  const rows=filtro==='todos'?LIDERES:LIDERES.filter(l=>l===filtro);
+  const mxP=Math.max(...LIDERES.map(l=>cntL(l,'pag')));
+  const mxE=Math.max(...LIDERES.map(l=>cntL(l,'enc')));
+  let html=`<thead><tr>
+    <th class="left">Líder</th><th>Total</th><th>Registrados</th>
+    <th class="group-pago">Pagaron</th><th class="group-pago">% Pago</th>
+    <th class="group-enc">Al Encuentro</th><th class="group-enc">% Asistencia</th>
+  </tr></thead><tbody>`;
+  rows.forEach((l,i)=>{
+    const reg=cntL(l,'reg'),pg=cntL(l,'pag'),en=cntL(l,'enc');
+    html+=`<tr style="animation-delay:${i*.04}s"><td class="name">👤 ${l}</td>
+      <td>12</td><td>${hCell(reg,heatA(reg,12))}</td>
+      <td>${hCell(pg,heatN(pg,mxP))}</td>
+      <td><b style="color:#90caf9">${pct(pg,reg)}%</b></td>
+      <td>${hCell(en,heatA(en,mxE))}</td>
+      <td><b style="color:#90caf9">${pct(en,pg)}%</b></td>
+    </tr>`;
+  });
+  html+=`<tr class="total-bg"><td class="name">TOTAL</td>
+    <td>144</td><td>${REG}</td><td>${PAG}</td><td>${pct(PAG,REG)}%</td>
+    <td>${ENC}</td><td>${pct(ENC,PAG)}%</td>
+  </tr></tbody>`;
+  document.getElementById('tablaPagos').innerHTML=html;
+}
+buildTablaPagos('todos');
+
+// TABLA FINAL
+function buildTablaFinal(filtro){
+  const rows=filtro==='todos'?LIDERES:LIDERES.filter(l=>l===filtro);
+  const mx={};
+  ['enc','pc1','pc2','pc3','pc4','baut','grad'].forEach(f=>mx[f]=Math.max(...LIDERES.map(l=>cntL(l,f))));
+  let html=`<thead><tr>
+    <th class="left">Líder</th><th class="group-enc">Encuentro</th>
+    <th class="group-post" colspan="4">POST-ENCUENTRO</th>
+    <th class="group-fin">Bautismo</th><th class="group-fin">Grado</th>
+  </tr><tr>
+    <th></th><th class="group-enc">15-17 Mayo</th>
+    <th class="group-post">Cl.1</th><th class="group-post">Cl.2</th>
+    <th class="group-post">Cl.3</th><th class="group-post">Cl.4</th>
+    <th class="group-fin">Bautismo</th><th class="group-fin">Grado</th>
+  </tr></thead><tbody>`;
+  rows.forEach((l,i)=>{
+    html+=`<tr style="animation-delay:${i*.04}s"><td class="name">👤 ${l}</td>
+      <td>${hCell(cntL(l,'enc'),heatA(cntL(l,'enc'),mx.enc))}</td>
+      ${['pc1','pc2','pc3','pc4'].map(f=>`<td>${hCell(cntL(l,f),heatN(cntL(l,f),mx[f]))}</td>`).join('')}
+      <td>${hCell(cntL(l,'baut'),heatP(cntL(l,'baut'),mx.baut))}</td>
+      <td>${hCell(cntL(l,'grad'),heatP(cntL(l,'grad'),mx.grad))}</td>
+    </tr>`;
+  });
+  html+=`<tr class="total-bg"><td class="name">TOTAL</td>
+    <td>${ENC}</td><td>${PC1}</td><td>${PC2}</td><td>${PC3}</td><td>${PC4}</td>
+    <td>${BAUT}</td><td>${GRAD}</td>
+  </tr></tbody>`;
+  document.getElementById('tablaFinal').innerHTML=html;
+}
+buildTablaFinal('todos');
+
+// BASE DE DATOS
+let filtroBaseQ='', filtroLiderQ='todos';
+function tick(b){ return b?'<span style="color:#69f0ae;font-weight:700">✔</span>':'<span style="color:rgba(255,255,255,0.15)">—</span>'; }
+function buildTablaBase(){
+  let data=PERSONAS;
+  if(filtroLiderQ!=='todos') data=data.filter(p=>p.lider===filtroLiderQ);
+  if(filtroBaseQ){ const q=filtroBaseQ.toLowerCase(); data=data.filter(p=>p.nombre.toLowerCase().includes(q)||p.lider.toLowerCase().includes(q)); }
+  document.getElementById('baseCount').textContent=`${data.length} hombres`;
+  let html=`<thead><tr>
+    <th>#</th><th class="left">Líder</th><th class="left">Nombre</th>
+    <th class="group-pre">Reg</th>
+    <th class="group-pre">P1</th><th class="group-pre">P2</th><th class="group-pre">P3</th><th class="group-pre">P4</th>
+    <th class="group-pago">Pago</th><th class="group-enc">Enc.</th>
+    <th class="group-post">C1</th><th class="group-post">C2</th><th class="group-post">C3</th><th class="group-post">C4</th>
+    <th class="group-fin">Baut.</th><th class="group-fin">Grad.</th>
+  </tr></thead><tbody>`;
+  data.forEach((p,i)=>{
+    html+=`<tr style="animation-delay:${Math.min(i*.008,.25)}s">
+      <td>${p.id}</td>
+      <td class="name" style="font-size:11px">${p.lider}</td>
+      <td class="name" style="font-size:11px">${p.nombre}</td>
+      <td>${tick(p.reg)}</td>
+      <td>${tick(p.c1)}</td><td>${tick(p.c2)}</td><td>${tick(p.c3)}</td><td>${tick(p.c4)}</td>
+      <td>${tick(p.pag)}</td><td>${tick(p.enc)}</td>
+      <td>${tick(p.pc1)}</td><td>${tick(p.pc2)}</td><td>${tick(p.pc3)}</td><td>${tick(p.pc4)}</td>
+      <td>${tick(p.baut)}</td><td>${tick(p.grad)}</td>
+    </tr>`;
+  });
+  document.getElementById('tablaBase').innerHTML=html+'</tbody>';
+}
+buildTablaBase();
+function filtrarBase(q){ filtroBaseQ=q; buildTablaBase(); }
+
+// FILTRO LÍDER
+const sel=document.getElementById('filtroLider');
+LIDERES.forEach(l=>{ const o=document.createElement('option'); o.value=l; o.textContent=l; sel.appendChild(o); });
+function filtrarLider(){
+  const v=sel.value; filtroLiderQ=v;
+  buildTablaGeneral(v); buildTablaEquipos(v); buildTablaClases(v); buildTablaPagos(v); buildTablaFinal(v); buildTablaBase();
+  if(v==='todos') renderKPIs({});
+  else renderKPIs({reg:cntL(v,'reg'),c4:cntL(v,'c4'),pag:cntL(v,'pag'),enc:cntL(v,'enc'),baut:cntL(v,'baut'),grad:cntL(v,'grad')});
+}
+
+// TABS
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  document.getElementById('content-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// EXPORT
+function exportarCSV(){
+  const cols=['ID','Lider','Nombre','Registrado','PreCl1','PreCl2','PreCl3','PreCl4','Pago','Encuentro','PostCl1','PostCl2','PostCl3','PostCl4','Bautismo','Grado'];
+  const rows=PERSONAS.map(p=>[p.id,p.lider,p.nombre,p.reg?1:0,p.c1?1:0,p.c2?1:0,p.c3?1:0,p.c4?1:0,p.pag?1:0,p.enc?1:0,p.pc1?1:0,p.pc2?1:0,p.pc3?1:0,p.pc4?1:0,p.baut?1:0,p.grad?1:0]);
+  const csv=[cols,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv); a.download='encuentro_hombres.csv'; a.click();
+}
+
+document.getElementById('fechaUpdate').textContent=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
+</script>
+</body>
+</html>
